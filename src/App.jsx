@@ -14,32 +14,28 @@ const defaultFeedback = {
 const localStorageKey = 'feedback';
 
 function App() {
-  const [feedback, setFeedback] = useState(defaultFeedback);
+  const [feedback, setFeedback] = useState(() => {
+    const savedFeedback = localStorage.getItem(localStorageKey);
+    return savedFeedback ? JSON.parse(savedFeedback) : defaultFeedback;
+  });
 
   const totalFeedback = feedback.good + feedback.neutral + feedback.bad;
   const positivePercent = Math.round((feedback.good / totalFeedback) * 100);
 
   useEffect(() => {
-    const savedFeedback = localStorage.getItem(localStorageKey);
-
-    if (savedFeedback) {
-      setFeedback(JSON.parse(savedFeedback));
-    }
-  }, []);
+    localStorage.setItem(localStorageKey, JSON.stringify(feedback));
+  }, [feedback]);
 
   const handleReset = () => {
     setFeedback(defaultFeedback);
-    localStorage.removeItem(localStorageKey);
   }
 
   const handleUpdateFeedback = (feedbackType) => {
-    const newState = {
-      ...feedback,
-      [feedbackType]: feedback[feedbackType] + 1
-    };
-    setFeedback(newState);
-    localStorage.setItem(localStorageKey, JSON.stringify(newState));
-  }
+    setFeedback((prevFeedback) => ({
+      ...prevFeedback,
+      [feedbackType]: prevFeedback[feedbackType] + 1,
+    }));
+  };
 
   return (
     <div className={css.App}>
